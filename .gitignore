@@ -1,4 +1,32 @@
+# Environment
+.env
+.env.*
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.venv/
+venv/
+
+# Data (downloaded datasets — too large for git)
+data/
+
+# Docker volumes (managed by Docker, not git)
+postgres_data/
+mlflow_artifacts/
+grafana_data/
+
+# macOS
+.DS_Store
+
+# Word docs
 *.doc
 *.docx
-.env
-/progress.md
+
+# Claude Code internal files
+frontend/AGENTS.md
+frontend/CLAUDE.md
+AGENTS.md
+CLAUDE.md
