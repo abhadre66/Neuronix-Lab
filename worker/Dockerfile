@@ -12,8 +12,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY worker/ .
 
-RUN mkdir -p /app/data
+RUN mkdir -p /app/data /tmp/prometheus_multiproc
 
 EXPOSE 8001
 
-CMD ["celery", "-A", "tasks", "worker", "--loglevel=info", "--concurrency=2"]
+ENV PROMETHEUS_MULTIPROC_DIR=/tmp/prometheus_multiproc
+
+CMD ["celery", "-A", "tasks", "worker", "--loglevel=info", "--pool=solo"]

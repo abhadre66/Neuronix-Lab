@@ -2,10 +2,14 @@ import uuid
 import os
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import Response
 from pydantic import BaseModel
 from celery import Celery
 import mlflow
 from mlflow.tracking import MlflowClient
+from prometheus_client import Counter, generate_latest, CONTENT_TYPE_LATEST
+
+jobs_submitted_total = Counter("jobs_submitted_total", "Total training jobs submitted")
 
 app = FastAPI(title="Neuronix Lab API", version="1.0.0")
 
@@ -36,6 +40,11 @@ def health():
     return {"status": "ok"}
 
 
+@app.get("/metrics")
+def metrics():
+    return Response(generate_latest(), media_type=CONTENT_TYPE_LATEST)
+
+
 @app.post("/jobs")
 def submit_job(job: JobRequest):
     job_id = str(uuid.uuid4())
@@ -49,6 +58,7 @@ def submit_job(job: JobRequest):
             "learning_rate": job.learning_rate,
         },
     )
+    jobs_submitted_total.inc()
     return {"job_id": job_id, "status": "queued"}
 
 

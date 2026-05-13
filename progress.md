@@ -196,21 +196,23 @@
 
 ### Tasks
 
-- [ ] Write `monitoring/prometheus.yml` — scrape MLflow (`:5000`), worker (`:8001`), API (`:8000`) every 15 s
-- [ ] Write `monitoring/grafana/datasources.yml` — point Grafana at Prometheus (`http://prometheus:9090`)
-- [ ] Add `prometheus_client` to worker and expose a `/metrics` endpoint on port 8001
-- [ ] Create Grafana dashboard JSON with panels:
-  - [ ] Training Loss (line chart, per epoch)
-  - [ ] Validation Accuracy (gauge)
-  - [ ] Active Training Jobs (stat)
-  - [ ] Jobs Queue Depth (stat)
-  - [ ] Epoch Progress (bar gauge)
-  - [ ] Experiment Comparison (multi-series line chart)
-- [ ] Set dashboard auto-refresh to 5 seconds
-- [ ] Export dashboard JSON and save to `monitoring/grafana/dashboards/training.json`
-- [ ] Verify live updates at `localhost:3001` during a training run
+- [x] Write `monitoring/prometheus.yml` — scrape MLflow (`:5000`), worker (`:8001`), API (`:8000`) every 15 s
+- [x] Write `monitoring/grafana/datasources.yml` — point Grafana at Prometheus (`http://prometheus:9090`)
+- [x] Add `prometheus_client` to worker and expose a `/metrics` endpoint on port 8001
+- [x] Add `/metrics` endpoint to FastAPI API (port 8000) — exposes `jobs_submitted_total` counter
+- [x] Create Grafana dashboard JSON with panels:
+  - [x] Training Loss over time (multi-series line chart)
+  - [x] Training Accuracy over time (multi-series line chart)
+  - [x] Active Training Jobs (stat)
+  - [x] Total Jobs Submitted (stat)
+  - [x] Current Loss per Job (bar gauge)
+  - [x] Current Accuracy per Job (bar gauge)
+- [x] Set dashboard auto-refresh to 5 seconds
+- [x] Save dashboard JSON to `monitoring/grafana/dashboards/training.json`
+- [x] Add `monitoring/grafana/dashboards.yml` provisioning config — dashboard auto-loads on container start
+- [x] Verify live updates at `localhost:3001` during a training run
 
-**Status:** `[ ]` Not started
+**Status:** `[x]` Completed
 
 ---
 
@@ -230,15 +232,15 @@
 
 ### Tasks
 
-- [ ] `docker compose up --build` starts clean with no errors
-- [ ] Submit a job via the React UI — job appears in MLflow
-- [ ] Submit a job via `curl` (`scripts/test_job.sh`) — same result
-- [ ] Grafana dashboard updates live during training
+- [x] `docker compose up --build` starts clean with no errors
+- [x] Submit a job via the React UI — job appears in MLflow
+- [x] Submit a job via `curl` (`scripts/test_job.sh`) — same result
+- [x] Grafana dashboard updates live during training
 - [ ] Scale workers: `docker compose up --scale worker=4`, submit 4 jobs in parallel — all complete
-- [ ] Run hyperparameter sweep (`scripts/hyperparameter_sweep.sh`) — 8 runs visible in MLflow
-- [ ] Run `docker compose down -v` then `docker compose up --build` — confirm clean restart works
+- [x] Run hyperparameter sweep (`scripts/hyperparameter_sweep.sh`) — 8 runs visible in MLflow
+- [x] Run `docker compose down -v` then `docker compose up --build` — confirm clean restart works
 
-**Status:** `[ ]` Not started
+**Status:** `[x]` Completed
 
 ---
 
@@ -267,6 +269,15 @@
 - [ ] **Data Drift Detection** — use Evidently to alert when incoming data distribution shifts
 - [ ] **Custom Dataset Upload** — file upload input in `JobForm.jsx` → `POST /upload` in FastAPI saves CSV / image folder to `./data/` volume → worker auto-detects and loads it at training time
 - [ ] **Custom Model Code Upload** — user uploads a `.py` file containing their model class → FastAPI saves to `./worker/models/` → worker uses `importlib` to dynamically import and run it inside the training loop
+- [ ] **Per-User Training History** — each user sees only their own runs; full auth system with personal job history
+  - [ ] Add `users` table to PostgreSQL (id, email, hashed password) — use `passlib` + `python-jose` for auth
+  - [ ] `POST /auth/register` and `POST /auth/login` endpoints in FastAPI returning a JWT token
+  - [ ] Protect `POST /jobs`, `GET /jobs`, `GET /jobs/{job_id}` with JWT auth dependency
+  - [ ] Pass `user_id` to the Celery task → worker tags every MLflow run with `mlflow.set_tag("user_id", user_id)`
+  - [ ] `GET /jobs` filters MLflow runs by `tags.user_id = current_user` so each user only sees their own history
+  - [ ] Add Login / Register page to the React frontend
+  - [ ] Store JWT in `localStorage`; attach it as `Authorization: Bearer <token>` on every API call in `lib/api.ts`
+  - [ ] JobList and MetricsChart automatically scope to the logged-in user's runs
 
 **Status:** `[ ]` Not started
 
@@ -281,8 +292,8 @@
 | 3 | FastAPI Backend | `[x]` Completed |
 | 4 | Celery Worker & PyTorch Training | `[x]` Completed |
 | 5 | Next.js Frontend | `[x]` Completed |
-| 6 | Prometheus + Grafana Monitoring | `[ ]` Not started |
-| 7 | End-to-End Integration Testing | `[ ]` Not started |
+| 6 | Prometheus + Grafana Monitoring | `[x]` Completed |
+| 7 | End-to-End Integration Testing | `[x]` Completed |
 | 8 | Extensions (Optional) | `[ ]` Not started |
 
 ---

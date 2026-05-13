@@ -8,7 +8,8 @@ from torch.utils.data import DataLoader, TensorDataset
 import torchvision
 import torchvision.transforms as transforms
 from celery import Celery
-from prometheus_client import Gauge, start_http_server
+from prometheus_client import Gauge, start_http_server, CollectorRegistry, multiprocess
+from prometheus_client import make_wsgi_app
 
 from models.image_classifier import get_model as get_image_model
 from models.text_classifier import get_text_model, get_tokenizer
@@ -32,6 +33,8 @@ try:
     start_http_server(8001)
 except Exception:
     pass
+
+
 
 
 def get_image_dataset(dataset_name: str):

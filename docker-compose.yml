@@ -119,6 +119,7 @@ services:
     volumes:
       - grafana_data:/var/lib/grafana
       - ./monitoring/grafana/datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml:ro
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
     ports:
       - "3001:3000"
     networks:

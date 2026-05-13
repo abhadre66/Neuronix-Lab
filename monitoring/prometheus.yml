@@ -15,6 +15,3 @@ scrape_configs:
     static_configs:
       - targets: ["worker:8001"]
 
-  - job_name: mlflow
-    static_configs:
-      - targets: ["mlflow:5000"]
