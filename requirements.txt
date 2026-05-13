@@ -4,8 +4,6 @@ uvicorn==0.29.0
 pydantic==2.7.1
 
 # Worker
-torch==2.2.2
-torchvision==0.17.2
 transformers==4.39.3
 datasets==2.18.0
 prometheus-client==0.20.0
