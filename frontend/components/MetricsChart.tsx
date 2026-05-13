@@ -158,7 +158,7 @@ export default function MetricsChart({ jobId }: Props) {
                   <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
                   <XAxis dataKey="epoch" stroke="#6b7280" tick={{ fontSize: 11 }} label={{ value: "Epoch", position: "insideBottom", offset: -2, fill: "#6b7280", fontSize: 11 }} />
                   <YAxis stroke="#6b7280" tick={{ fontSize: 11 }} domain={[0, 1]} tickFormatter={(v) => `${(v * 100).toFixed(0)}%`} />
-                  <Tooltip contentStyle={{ backgroundColor: "#1f2937", border: "1px solid #374151", borderRadius: "8px", color: "#f9fafb" }} formatter={(v: number) => `${(v * 100).toFixed(2)}%`} />
+                  <Tooltip contentStyle={{ backgroundColor: "#1f2937", border: "1px solid #374151", borderRadius: "8px", color: "#f9fafb" }} formatter={(v) => typeof v === "number" ? `${(v * 100).toFixed(2)}%` : v} />
                   <Legend wrapperStyle={{ fontSize: "12px" }} />
                   <Line type="monotone" dataKey="train_accuracy" stroke="#10b981" strokeWidth={2} dot={false} name="Train Acc" />
                   <Line type="monotone" dataKey="val_accuracy" stroke="#f59e0b" strokeWidth={2} dot={false} name="Val Acc" />
