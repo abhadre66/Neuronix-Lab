@@ -1,0 +1,128 @@
+services:
+
+  postgres:
+    image: postgres:15
+    container_name: neuronix_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: neuronix
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: mlflow
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U neuronix -d mlflow"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - neuronix_net
+
+  redis:
+    image: redis:7-alpine
+    container_name: neuronix_redis
+    restart: always
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - neuronix_net
+
+  mlflow:
+    build:
+      context: ./mlflow
+    container_name: neuronix_mlflow
+    restart: always
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: >
+      mlflow server
+      --backend-store-uri postgresql://neuronix:${DB_PASSWORD}@postgres:5432/mlflow
+      --artifacts-destination /mlflow/artifacts
+      --host 0.0.0.0
+      --port 5000
+    volumes:
+      - mlflow_artifacts:/mlflow/artifacts
+    ports:
+      - "5001:5000"
+    networks:
+      - neuronix_net
+
+  api:
+    build:
+      context: .
+      dockerfile: api/Dockerfile
+    container_name: neuronix_api
+    restart: always
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      DB_PASSWORD: ${DB_PASSWORD}
+      REDIS_URL: redis://redis:6379/0
+      MLFLOW_TRACKING_URI: http://mlflow:5000
+      CORS_ORIGINS: ${CORS_ORIGINS}
+    ports:
+      - "8000:8000"
+    networks:
+      - neuronix_net
+
+  worker:
+    build:
+      context: .
+      dockerfile: worker/Dockerfile
+    restart: always
+    depends_on:
+      redis:
+        condition: service_healthy
+      mlflow:
+        condition: service_started
+    environment:
+      REDIS_URL: redis://redis:6379/0
+      MLFLOW_TRACKING_URI: http://mlflow:5000
+    deploy:
+      replicas: 2
+    networks:
+      - neuronix_net
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: neuronix_prometheus
+    restart: always
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "9090:9090"
+    networks:
+      - neuronix_net
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: neuronix_grafana
+    restart: always
+    depends_on:
+      - prometheus
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD}
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml:ro
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+    ports:
+      - "3001:3000"
+    networks:
+      - neuronix_net
+
+volumes:
+  postgres_data:
+  mlflow_artifacts:
+  grafana_data:
+
+networks:
+  neuronix_net:
+    driver: bridge
