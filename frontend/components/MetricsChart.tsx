@@ -25,6 +25,7 @@ interface ChartPoint {
   val_accuracy?: number;
   mae?: number;
   r2_score?: number;
+  [key: string]: number | undefined;
 }
 
 function buildChartData(job: JobDetail): ChartPoint[] {
