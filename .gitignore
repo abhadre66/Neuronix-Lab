@@ -33,3 +33,11 @@ CLAUDE.md
 
 # SSH keys
 *.pem
+*.key
+*.key.pub
+ssh-key-*
+
+# Deployment files (local only)
+docker-compose.prod.yml
+DEPLOYMENT.md
+COMMANDS.md
